@@ -22,4 +22,10 @@
         <ProjectReference Include="../StateFlowApi/StateFlowApi.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <None Update="Infrastructure/AwsMocks/test.b2bmessage.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+
 </Project>

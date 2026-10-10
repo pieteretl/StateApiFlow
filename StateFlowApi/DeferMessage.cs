@@ -2,12 +2,12 @@ using StateFlowApi.Contracts;
 
 namespace StateFlowApi;
 
-public interface IDifferMessage
+public interface IDeferMessage
 {
     Task<MessageState> Process(ConcurCompleatMessage message);
 }
 
-public class DifferMessage(ILogger<DifferMessage> logger) : IDifferMessage
+public class DeferMessage(ILogger<DeferMessage> logger) : IDeferMessage
 {
     public async Task<MessageState> Process(ConcurCompleatMessage message)
     {

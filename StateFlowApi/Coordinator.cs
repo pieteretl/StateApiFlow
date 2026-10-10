@@ -5,7 +5,7 @@ namespace StateFlowApi;
 public class Coordinator
 (
     IReceiveMessage receiveMessage,
-    IDifferMessage differMessage,
+    IDeferMessage deferMessage,
     ISendMessage sendMessage,
     IIsolateMessage isolateMessage,
     IFailMessage failMessage,
@@ -51,7 +51,7 @@ public class Coordinator
         {
             MessageState.Start => await startMessage.Process(message),
             MessageState.Reject => await rejectMessage.Process(message),
-            MessageState.Differ => await differMessage.Process(message),
+            MessageState.Defer => await deferMessage.Process(message),
             MessageState.Receive => await receiveMessage.Process(message),
             MessageState.Process => await sendMessage.Process(message),
             MessageState.Isolate => await isolateMessage.Process(message),

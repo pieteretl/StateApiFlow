@@ -32,13 +32,18 @@ public sealed class ReceiveMessage(ILogger<ReceiveMessage> logger, ICircuitState
             {
                 logger.LogInformation("This is a refund message");
                 logger.LogInformation("I need to process this later");
-                return MessageState.Differ;
+                return MessageState.Defer;
             }
         }
         
         return MessageState.Unknown;
     }
 
+    /// <summary>
+    /// TODO: We need the orderId in the contract
+    /// </summary>
+    /// <param name="message"></param>
+    /// <returns></returns>
     private static bool IsRefundMessage(ConcurCompleatMessage message)
     {
         var eventSubType = message.MetaData.EventSubType;

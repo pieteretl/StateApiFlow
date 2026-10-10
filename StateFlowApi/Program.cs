@@ -15,7 +15,7 @@ builder.Services.AddSwaggerGen(options =>
 });
 builder.Services.AddTransient<ICoordinator, Coordinator>();
 builder.Services.AddTransient<IReceiveMessage, ReceiveMessage>();
-builder.Services.AddTransient<IDifferMessage, DifferMessage>();
+builder.Services.AddTransient<IDeferMessage, DeferMessage>();
 builder.Services.AddTransient<ISendMessage, SendMessage>();
 builder.Services.AddTransient<IIsolateMessage, IsolateMessage>();
 builder.Services.AddTransient<ICancelMessage, CancelMessage>();

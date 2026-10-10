@@ -4,7 +4,7 @@ public enum MessageState
 {
     Reject,
     Receive,
-    Differ,
+    Defer,
     Process,
     Isolate,
     Cancel,
