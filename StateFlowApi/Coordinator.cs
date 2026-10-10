@@ -109,9 +109,10 @@ public enum MessageState
 
 public class RejectMessage : IRejectMessage
 {
-    public Task<MessageState> Process(MessageData messageData)
+    public async Task<MessageState> Process(MessageData messageData)
     {
-        throw new NotImplementedException();
+        await Task.Delay(1);
+        return MessageState.Success;
     }
 }
 
@@ -137,9 +138,10 @@ public interface IReceivedMessage
 
 public class DifferMessage : IDifferMessage
 {
-    public Task<MessageState> Process(MessageData messageData)
+    public async Task<MessageState> Process(MessageData messageData)
     {
-        throw new NotImplementedException();
+        await Task.Delay(1);
+        return MessageState.Success;
     }
 }
 
@@ -150,9 +152,10 @@ public interface IDifferMessage
 
 public class ProcessMessage : IProcessMessage
 {
-    public Task<MessageState> Process(MessageData messageData)
+    public async Task<MessageState> Process(MessageData messageData)
     {
-        throw new NotImplementedException();
+        await Task.Delay(1);
+        return MessageState.Success;
     }
 }
 
@@ -163,9 +166,10 @@ public interface IProcessMessage
 
 public class IsolateMessage : IIsolateMessage
 {
-    public Task<MessageState> Process(MessageData messageData)
+    public async Task<MessageState> Process(MessageData messageData)
     {
-        throw new NotImplementedException();
+        await Task.Delay(1);
+        return MessageState.Success;
     }
 }
 
@@ -176,9 +180,10 @@ public interface IIsolateMessage
 
 public class CancelMessage : ICancelMessage
 {
-    public Task<MessageState> Process(MessageData messageData)
+    public async Task<MessageState> Process(MessageData messageData)
     {
-        throw new NotImplementedException();
+        await Task.Delay(1);
+        return MessageState.Success;
     }
 }
 
@@ -189,9 +194,10 @@ public interface ICancelMessage
 
 public class FailMessage : IFailMessage
 {
-    public Task<MessageState> Process(MessageData messageData)
+    public async Task<MessageState> Process(MessageData messageData)
     {
-        throw new NotImplementedException();
+        await Task.Delay(1);
+        return MessageState.Success;
     }
 }
 
@@ -202,9 +208,10 @@ public interface IFailMessage
 
 public class RetryMessage : IRetryMessage
 {
-    public Task<MessageState> Process(MessageData messageData)
+    public async Task<MessageState> Process(MessageData messageData)
     {
-        throw new NotImplementedException();
+        await Task.Delay(1);
+        return MessageState.Success;
     }
 }
 
