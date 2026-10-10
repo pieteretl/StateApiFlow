@@ -1,3 +1,5 @@
+using StateFlowApi.Contracts;
+
 namespace StateFlowApi;
 
 public class Coordinator
@@ -13,26 +15,27 @@ public class Coordinator
     ILogger<Coordinator> logger
 ) : ICoordinator
 {
-    public async ValueTask<bool> StartAsync(MessageData messageData, CancellationToken cancellationToken)
+    public async ValueTask<bool> StartAsync(ConcurCompleatMessage message, CancellationToken cancellationToken)
     {
         var messageState = MessageState.Start;
+        var messageId = ResolveMessageId(message);
 
         try
         {
             while (messageState is not MessageState.Success)
             {
-                messageState = await TransitionAsync(messageState, messageData, cancellationToken);
+                messageState = await TransitionAsync(messageState, message, cancellationToken);
 
-                if (messageState is MessageState.Cancelled)
+                if (messageState is MessageState.Cancel)
                 {
-                    logger.LogInformation("Message was cancelled for {MessageId}", messageData.Id);
+                    logger.LogInformation("Message was cancelled for {MessageId}", messageId);
                     return false;
                 }
             }
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error processing message {MessageId}", messageData.Id);
+            logger.LogError(ex, "Error processing message {MessageId}", messageId);
             throw;
         }
 
@@ -40,34 +43,42 @@ public class Coordinator
         return true;
     }
 
-    private async Task<MessageState> TransitionAsync(MessageState currentState, MessageData messageData, CancellationToken cancellationToken)
+    private async Task<MessageState> TransitionAsync(MessageState currentState, ConcurCompleatMessage message, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
         return currentState switch
         {
-            MessageState.Start => await startMessage.Process(messageData),
-            MessageState.Reject => await rejectMessage.Process(messageData),
-            MessageState.Differ => await differMessage.Process(messageData),
-            MessageState.Received => await receiveMessage.Process(messageData),
-            MessageState.Process => await sendMessage.Process(messageData),
-            MessageState.Isolate => await isolateMessage.Process(messageData),
-            MessageState.Fail => await failMessage.Process(messageData),
-            MessageState.Retry => await retryMessage.Process(messageData),
-            _ => MessageState.Cancelled
+            MessageState.Start => await startMessage.Process(message),
+            MessageState.Reject => await rejectMessage.Process(message),
+            MessageState.Differ => await differMessage.Process(message),
+            MessageState.Receive => await receiveMessage.Process(message),
+            MessageState.Process => await sendMessage.Process(message),
+            MessageState.Isolate => await isolateMessage.Process(message),
+            MessageState.Fail => await failMessage.Process(message),
+            MessageState.Retry => await retryMessage.Process(message),
+            _ => MessageState.Cancel
         };
+    }
+
+    private static string ResolveMessageId(ConcurCompleatMessage message)
+    {
+        if (!string.IsNullOrWhiteSpace(message.MetaData.MessageId))
+        {
+            return message.MetaData.MessageId;
+        }
+
+        if (!string.IsNullOrWhiteSpace(message.MetaData.ConversationId))
+        {
+            return message.MetaData.ConversationId;
+        }
+
+        return "unknown";
     }
 }
 
-
 public interface ICoordinator
 {
-    ValueTask<bool> StartAsync(MessageData messageData, CancellationToken cancellationToken);
-}
-
-public class MessageData
-{
-    public Guid Id { get; set; }
-    public string Type { get; set; }
+    ValueTask<bool> StartAsync(ConcurCompleatMessage message, CancellationToken cancellationToken);
 }
 

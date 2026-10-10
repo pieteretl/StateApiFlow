@@ -1,17 +1,17 @@
-using StateFlowApi.Controllers;
+using StateFlowApi.Contracts;
 
 namespace StateFlowApi;
 
 public interface IRetryMessage
 {
-    Task<MessageState> Process(MessageData messageData);
+    Task<MessageState> Process(ConcurCompleatMessage message);
 }
 
 public class RetryMessage(ILogger<RetryMessage> logger, ICircuitStateContext circuitStateContext) : IRetryMessage
 {
-    public async Task<MessageState> Process(MessageData messageData)
+    public async Task<MessageState> Process(ConcurCompleatMessage message)
     {
-        logger.LogInformation($"Starting {messageData.Id} in {nameof(RetryMessage)}");
+        logger.LogInformation("Starting {MessageId} in {Handler}", ResolveMessageId(message), nameof(RetryMessage));
         await Task.Delay(1);
         
         if (circuitStateContext.State == CircuitState.Open)
@@ -20,5 +20,12 @@ public class RetryMessage(ILogger<RetryMessage> logger, ICircuitStateContext cir
         }
         
         return MessageState.Process;
+    }
+
+    private static string ResolveMessageId(ConcurCompleatMessage message)
+    {
+        return string.IsNullOrWhiteSpace(message.MetaData.MessageId)
+            ? message.MetaData.ConversationId
+            : message.MetaData.MessageId;
     }
 }

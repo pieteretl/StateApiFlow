@@ -3,11 +3,11 @@ namespace StateFlowApi;
 public enum MessageState
 {
     Reject,
-    Received,
+    Receive,
     Differ,
     Process,
     Isolate,
-    Cancelled,
+    Cancel,
     Fail,
     Retry,
     Start,

@@ -1,17 +1,17 @@
-using StateFlowApi.Controllers;
+using StateFlowApi.Contracts;
 
 namespace StateFlowApi;
 
 public interface IReceiveMessage
 {
-    Task<MessageState> Process(MessageData messageData);
+    Task<MessageState> Process(ConcurCompleatMessage message);
 }
 
 public sealed class ReceiveMessage(ILogger<ReceiveMessage> logger, ICircuitStateContext circuitStateContext) : IReceiveMessage
 {
-    public async Task<MessageState> Process(MessageData messageData)
+    public async Task<MessageState> Process(ConcurCompleatMessage message)
     {
-        logger.LogInformation($"Received {messageData.Id} in {nameof(ReceiveMessage)}");
+        logger.LogInformation("Received {MessageId} in {Handler}", ResolveMessageId(message), nameof(ReceiveMessage));
         await Task.Delay(1);
         
         if (circuitStateContext.State == CircuitState.Open || circuitStateContext.State == CircuitState.HalfOpen)
@@ -20,15 +20,15 @@ public sealed class ReceiveMessage(ILogger<ReceiveMessage> logger, ICircuitState
         if (circuitStateContext.State == CircuitState.Closed)
         {
             logger.LogInformation("Can I process this order now?");
-        
-            if (string.Equals(messageData.Type, "order", StringComparison.OrdinalIgnoreCase))
+
+            if (!IsRefundMessage(message))
             {
                 logger.LogInformation("This is a order message");
                 logger.LogInformation("Process this order now");
                 return MessageState.Process;
             }
 
-            if (string.Equals(messageData.Type, "refund", StringComparison.OrdinalIgnoreCase))
+            if (IsRefundMessage(message))
             {
                 logger.LogInformation("This is a refund message");
                 logger.LogInformation("I need to process this later");
@@ -37,5 +37,21 @@ public sealed class ReceiveMessage(ILogger<ReceiveMessage> logger, ICircuitState
         }
         
         return MessageState.Unknown;
+    }
+
+    private static bool IsRefundMessage(ConcurCompleatMessage message)
+    {
+        var eventSubType = message.MetaData.EventSubType;
+        var operationType = message.EventData.MessageIdentity.OperationType;
+
+        return string.Equals(eventSubType, "refund", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(operationType, "refund", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string ResolveMessageId(ConcurCompleatMessage message)
+    {
+        return string.IsNullOrWhiteSpace(message.MetaData.MessageId)
+            ? message.MetaData.ConversationId
+            : message.MetaData.MessageId;
     }
 }
