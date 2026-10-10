@@ -21,38 +21,3 @@ public class CreateOrderRequest
     public string Type { get; set; } = "order";
     public CircuitState CircuitState { get; set; }
 }
-
-public enum CircuitState
-{
-    Closed,
-    Open,
-    HalfOpen
-}
-
-public class CircuitStateContext : ICircuitStateContext
-{
-    private readonly Lock _lock = new();
-
-    public CircuitState State
-    {
-        get
-        {
-            lock (_lock)
-            {
-                return field;
-            }
-        }
-        set
-        {
-            lock (_lock)
-            {
-                field = value;
-            }
-        }
-    } = CircuitState.Closed;
-}
-
-public interface ICircuitStateContext
-{
-    CircuitState State { get; set; }
-}
