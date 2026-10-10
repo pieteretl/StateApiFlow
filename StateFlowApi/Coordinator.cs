@@ -27,28 +27,28 @@ public class Coordinator
                 switch (_messageState)
                 {
                     case MessageState.Reject:
-                        _messageState = rejectMessage.Process(messageData);
+                        _messageState = await rejectMessage.Process(messageData);
                         break;
                     case MessageState.Received:
                         _messageState = await receivedMessage.Process(messageData);
                         break;
                     case MessageState.Differ:
-                        _messageState = differMessage.Process(messageData);
+                        _messageState = await differMessage.Process(messageData);
                         break;
                     case MessageState.Process:
-                        _messageState = processMessage.Process(messageData);
+                        _messageState = await processMessage.Process(messageData);
                         break;
                     case MessageState.Isolate:
-                        _messageState = isolateMessage.Process(messageData);
+                        _messageState = await isolateMessage.Process(messageData);
                         break;
                     case MessageState.Cancelled:
-                        _messageState = cancelMessage.Process(messageData);
+                        _messageState = await cancelMessage.Process(messageData);
                         return false;
                     case MessageState.Fail:
-                        _messageState = failMessage.Process(messageData);
+                        _messageState = await failMessage.Process(messageData);
                         break;
                     case MessageState.Retry:
-                        _messageState = retryMessage.Process(messageData);
+                        _messageState = await retryMessage.Process(messageData);
                         break;
                     case MessageState.Start:
                         _messageState = await startMessage.Process(messageData);
@@ -109,7 +109,7 @@ public enum MessageState
 
 public class RejectMessage : IRejectMessage
 {
-    public MessageState Process(MessageData messageData)
+    public Task<MessageState> Process(MessageData messageData)
     {
         throw new NotImplementedException();
     }
@@ -117,7 +117,7 @@ public class RejectMessage : IRejectMessage
 
 public interface IRejectMessage
 {
-    MessageState Process(MessageData messageData);
+    Task<MessageState> Process(MessageData messageData);
 }
 
 public class ReceivedMessage(ILogger<ReceivedMessage> logger) : IReceivedMessage
@@ -137,7 +137,7 @@ public interface IReceivedMessage
 
 public class DifferMessage : IDifferMessage
 {
-    public MessageState Process(MessageData messageData)
+    public Task<MessageState> Process(MessageData messageData)
     {
         throw new NotImplementedException();
     }
@@ -145,12 +145,12 @@ public class DifferMessage : IDifferMessage
 
 public interface IDifferMessage
 {
-    MessageState Process(MessageData messageData);
+    Task<MessageState> Process(MessageData messageData);
 }
 
 public class ProcessMessage : IProcessMessage
 {
-    public MessageState Process(MessageData messageData)
+    public Task<MessageState> Process(MessageData messageData)
     {
         throw new NotImplementedException();
     }
@@ -158,12 +158,12 @@ public class ProcessMessage : IProcessMessage
 
 public interface IProcessMessage
 {
-    MessageState Process(MessageData messageData);
+    Task<MessageState> Process(MessageData messageData);
 }
 
 public class IsolateMessage : IIsolateMessage
 {
-    public MessageState Process(MessageData messageData)
+    public Task<MessageState> Process(MessageData messageData)
     {
         throw new NotImplementedException();
     }
@@ -171,12 +171,12 @@ public class IsolateMessage : IIsolateMessage
 
 public interface IIsolateMessage
 {
-    MessageState Process(MessageData messageData);
+    Task<MessageState> Process(MessageData messageData);
 }
 
 public class CancelMessage : ICancelMessage
 {
-    public MessageState Process(MessageData messageData)
+    public Task<MessageState> Process(MessageData messageData)
     {
         throw new NotImplementedException();
     }
@@ -184,12 +184,12 @@ public class CancelMessage : ICancelMessage
 
 public interface ICancelMessage
 {
-    MessageState Process(MessageData messageData);
+    Task<MessageState> Process(MessageData messageData);
 }
 
 public class FailMessage : IFailMessage
 {
-    public MessageState Process(MessageData messageData)
+    public Task<MessageState> Process(MessageData messageData)
     {
         throw new NotImplementedException();
     }
@@ -197,12 +197,12 @@ public class FailMessage : IFailMessage
 
 public interface IFailMessage
 {
-    MessageState Process(MessageData messageData);
+    Task<MessageState> Process(MessageData messageData);
 }
 
 public class RetryMessage : IRetryMessage
 {
-    public MessageState Process(MessageData messageData)
+    public Task<MessageState> Process(MessageData messageData)
     {
         throw new NotImplementedException();
     }
@@ -210,5 +210,5 @@ public class RetryMessage : IRetryMessage
 
 public interface IRetryMessage
 {
-    MessageState Process(MessageData messageData);
+    Task<MessageState> Process(MessageData messageData);
 }
