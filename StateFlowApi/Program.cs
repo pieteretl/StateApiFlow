@@ -1,4 +1,5 @@
 using StateFlowApi;
+using StateFlowApi.Controllers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,15 +9,17 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddTransient<ICoordinator, Coordinator>();
-builder.Services.AddTransient<IReceivedMessage, ReceivedMessage>();
+builder.Services.AddTransient<IReceiveMessage, ReceiveMessage>();
 builder.Services.AddTransient<IDifferMessage, DifferMessage>();
-builder.Services.AddTransient<IProcessMessage, ProcessMessage>();
+builder.Services.AddTransient<ISendMessage, SendMessage>();
 builder.Services.AddTransient<IIsolateMessage, IsolateMessage>();
 builder.Services.AddTransient<ICancelMessage, CancelMessage>();
 builder.Services.AddTransient<IFailMessage, FailMessage>();
 builder.Services.AddTransient<IRetryMessage, RetryMessage>();
 builder.Services.AddTransient<IRejectMessage, RejectMessage>();
 builder.Services.AddTransient<IStartMessage, StartMessage>();
+
+builder.Services.AddSingleton<ICircuitStateContext, CircuitStateContext>();
 
 var app = builder.Build();
 

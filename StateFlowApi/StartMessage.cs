@@ -11,6 +11,7 @@ public class StartMessage(ILogger<StartMessage> logger) : IStartMessage
     {
         await Task.Delay(1);
         logger.LogInformation($"Starting {messageData.Id}");
+        logger.LogInformation("Do some validation here");
         return MessageState.Received;
     }
 }

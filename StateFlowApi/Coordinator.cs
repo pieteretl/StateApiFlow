@@ -1,12 +1,13 @@
+using StateFlowApi.Controllers;
+
 namespace StateFlowApi;
 
 public class Coordinator
 (
-    IReceivedMessage receivedMessage,
+    IReceiveMessage receiveMessage,
     IDifferMessage differMessage,
-    IProcessMessage processMessage,
+    ISendMessage sendMessage,
     IIsolateMessage isolateMessage,
-    ICancelMessage cancelMessage,
     IFailMessage failMessage,
     IRetryMessage retryMessage,
     IRejectMessage rejectMessage,
@@ -14,7 +15,7 @@ public class Coordinator
     ILogger<Coordinator> logger
 ) : ICoordinator
 {
-    public async Task<bool> StartAsync(MessageData messageData, CancellationToken cancellationToken)
+    public async ValueTask<bool> StartAsync(MessageData messageData, CancellationToken cancellationToken)
     {
         var messageState = MessageState.Start;
 
@@ -50,13 +51,12 @@ public class Coordinator
             MessageState.Start => await startMessage.Process(messageData),
             MessageState.Reject => await rejectMessage.Process(messageData),
             MessageState.Differ => await differMessage.Process(messageData),
-            MessageState.Received => await receivedMessage.Process(messageData),
-            MessageState.Process => await processMessage.Process(messageData),
+            MessageState.Received => await receiveMessage.Process(messageData),
+            MessageState.Process => await sendMessage.Process(messageData),
             MessageState.Isolate => await isolateMessage.Process(messageData),
-            // MessageState.Cancelled => await cancelMessage.Process(messageData),
             MessageState.Fail => await failMessage.Process(messageData),
             MessageState.Retry => await retryMessage.Process(messageData),
-            _ => MessageState.Success
+            _ => MessageState.Cancelled
         };
     }
 }
@@ -64,11 +64,12 @@ public class Coordinator
 
 public interface ICoordinator
 {
-    Task<bool> StartAsync(MessageData messageData, CancellationToken cancellationToken);
+    ValueTask<bool> StartAsync(MessageData messageData, CancellationToken cancellationToken);
 }
 
 public class MessageData
 {
     public Guid Id { get; set; }
+    public string Type { get; set; }
 }
 
