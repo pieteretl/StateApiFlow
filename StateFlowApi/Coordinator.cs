@@ -14,57 +14,50 @@ public class Coordinator
     ILogger<Coordinator> logger
 ) : ICoordinator
 {
-    private MessageState _messageState = MessageState.Start;
-    private readonly Lock _lock = new();
-    private int _failureCount = 0;
-    
     public async Task<bool> StartAsync(MessageData messageData, CancellationToken cancellationToken)
     {
+        var messageState = MessageState.Start;
+
         try
         {
-            while (_messageState is not MessageState.Success)
+            while (messageState is not MessageState.Success)
             {
-                switch (_messageState)
+                messageState = await TransitionAsync(messageState, messageData, cancellationToken);
+
+                if (messageState == MessageState.Cancelled)
                 {
-                    case MessageState.Reject:
-                        _messageState = await rejectMessage.Process(messageData);
-                        break;
-                    case MessageState.Received:
-                        _messageState = await receivedMessage.Process(messageData);
-                        break;
-                    case MessageState.Differ:
-                        _messageState = await differMessage.Process(messageData);
-                        break;
-                    case MessageState.Process:
-                        _messageState = await processMessage.Process(messageData);
-                        break;
-                    case MessageState.Isolate:
-                        _messageState = await isolateMessage.Process(messageData);
-                        break;
-                    case MessageState.Cancelled:
-                        _messageState = await cancelMessage.Process(messageData);
-                        return false;
-                    case MessageState.Fail:
-                        _messageState = await failMessage.Process(messageData);
-                        break;
-                    case MessageState.Retry:
-                        _messageState = await retryMessage.Process(messageData);
-                        break;
-                    case MessageState.Start:
-                        _messageState = await startMessage.Process(messageData);
-                        break;
-                    default:
-                        return false;
+                    logger.LogInformation("Message was cancelled for {MessageId}", messageData.Id);
+                    return false;
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex);
+            logger.LogError(ex, "Error processing message {MessageId}", messageData.Id);
             throw;
         }
-        logger.LogInformation($"messageState {_messageState}");
+
+        logger.LogInformation("messageState {MessageState}", messageState);
         return true;
+    }
+
+    private async Task<MessageState> TransitionAsync(MessageState currentState, MessageData messageData, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        return currentState switch
+        {
+            MessageState.Reject => await rejectMessage.Process(messageData),
+            MessageState.Received => await receivedMessage.Process(messageData),
+            MessageState.Differ => await differMessage.Process(messageData),
+            MessageState.Process => await processMessage.Process(messageData),
+            MessageState.Isolate => await isolateMessage.Process(messageData),
+            MessageState.Cancelled => await cancelMessage.Process(messageData),
+            MessageState.Fail => await failMessage.Process(messageData),
+            MessageState.Retry => await retryMessage.Process(messageData),
+            MessageState.Start => await startMessage.Process(messageData),
+            _ => MessageState.Success
+        };
     }
 }
 
