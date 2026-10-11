@@ -1,4 +1,5 @@
 using StateFlowApi.Contracts;
+using StateFlowApi.OtherStates;
 
 namespace StateFlowApi.Application;
 
@@ -16,6 +17,11 @@ public class Coordinator
     ILogger<Coordinator> logger
 ) : ICoordinator
 {
+    private readonly uint _maxFailures = 5;
+    private readonly Lock _lock = new();
+    private uint _messageCount = 0;
+    
+    
     public async ValueTask<bool> StartAsync(ConcurCompleatMessage message, CancellationToken cancellationToken)
     {
         var messageState = MessageState.Start;
@@ -23,7 +29,7 @@ public class Coordinator
 
         try
         {
-            while (messageState is not MessageState.Done)
+            while (messageState is not MessageState.Done && _messageCount < _maxFailures)
             {
                 messageState = await TransitionToNextState(messageState, message, cancellationToken);
 
@@ -32,6 +38,11 @@ public class Coordinator
                     logger.LogInformation("Message was cancelled for {MessageId}", messageId);
                     return false;
                 }
+                
+                // using (_lock.EnterScope())
+                // {
+                //     _messageCount++;
+                // };
             }
         }
         catch (Exception ex)

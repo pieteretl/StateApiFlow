@@ -12,7 +12,7 @@ public class DynamoDbClient : IDynamoDbClient
         );
     }
 
-    public async Task<DbData> StoreMetadataWithMessageStatus()
+    public async Task<DbData> StoreMetadataWithMessageStatus(MessageState receive)
     {
         await Task.Delay(1);
         return await Task.FromResult(new DbData
@@ -31,7 +31,7 @@ public class DynamoDbClient : IDynamoDbClient
 public interface IDynamoDbClient
 {
     Task<DbData> Get();
-    Task<DbData> StoreMetadataWithMessageStatus();
+    Task<DbData> StoreMetadataWithMessageStatus(MessageState receive);
     Task Store();
 }
 

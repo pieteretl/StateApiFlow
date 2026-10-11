@@ -2,6 +2,7 @@ using StateFlowApi;
 using StateFlowApi.Application;
 using StateFlowApi.Controllers;
 using StateFlowApi.Infrastructure;
+using StateFlowApi.OtherStates;
 using StateFlowApi.Swagger;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -34,7 +35,7 @@ builder.Services.AddTransient<ISecretClient, SecretClient>();
 builder.Services.AddTransient<ITokeniseClient, TokeniserClient>();
 builder.Services.AddTransient<ISqsClient, SqsClient>();
 
-builder.Services.AddHostedService<Worker>();
+// builder.Services.AddHostedService<Worker>();
 
 var app = builder.Build();
 

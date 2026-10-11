@@ -8,22 +8,14 @@ public interface IFinishMessage
     Task<MessageState> Process(ConcurCompleatMessage message);
 }
 
-public class FinishMessage(ILogger<StartMessage> logger, IDynamoDbClient dynamoDbClient) : IFinishMessage
+public class FinishMessage(ILogger<FinishMessage> logger, IDynamoDbClient dynamoDbClient) : IFinishMessage
 {
     public async Task<MessageState> Process(ConcurCompleatMessage message)
     {
         await Task.Delay(1);
-        logger.LogInformation("Starting {MessageId}", ResolveMessageId(message));
-        logger.LogInformation("Finishing  storing the result in DB");
-        await dynamoDbClient.Store();
+        logger.LogInformation("Finishing and storing the result in DB");
+        await dynamoDbClient.StoreMetadataWithMessageStatus(MessageState.Done);
         
         return MessageState.Done;
-    }
-
-    private static string ResolveMessageId(ConcurCompleatMessage message)
-    {
-        return string.IsNullOrWhiteSpace(message.MetaData.MessageId)
-            ? message.MetaData.ConversationId
-            : message.MetaData.MessageId;
     }
 }

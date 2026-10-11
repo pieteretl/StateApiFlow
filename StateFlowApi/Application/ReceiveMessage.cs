@@ -8,6 +8,16 @@ public interface IReceiveMessage
     Task<MessageState> Process(ConcurCompleatMessage message);
 }
 
+/// <summary>
+/// Once validation checks have passed, the this step is store the message meta
+/// data in the DB for processing and auditing.
+/// This also checks whether the message is dependent on another message, such
+/// as order must be received 1st, and handled before a refund.
+/// Thus if a refund is found before a the order, then the message will be differed
+/// </summary>
+/// <param name="logger"></param>
+/// <param name="circuitStateContext"></param>
+/// <param name="dynamoDbClient"></param>
 public sealed class ReceiveMessage(ILogger<ReceiveMessage> logger, ICircuitStateContext circuitStateContext, IDynamoDbClient dynamoDbClient) : IReceiveMessage
 {
     public async Task<MessageState> Process(ConcurCompleatMessage message)
@@ -15,32 +25,39 @@ public sealed class ReceiveMessage(ILogger<ReceiveMessage> logger, ICircuitState
         logger.LogInformation("Received {MessageId} in {Handler}", ResolveMessageId(message), nameof(ReceiveMessage));
         await Task.Delay(1);
         
-        if (circuitStateContext.State == CircuitState.Open || circuitStateContext.State == CircuitState.HalfOpen)
-            return MessageState.Isolate;
+        logger.LogInformation("Store this in DB, and give it a state of received");
+        await dynamoDbClient.StoreMetadataWithMessageStatus(MessageState.Receive);
 
-        if (circuitStateContext.State == CircuitState.Closed)
+        if (IsDownstreamInError())
         {
-            logger.LogInformation("Can I process this order now?");
-            
-            logger.LogInformation("Store this in DB, and give it a state of received");
-            await dynamoDbClient.StoreMetadataWithMessageStatus();
+            logger.LogInformation("Pretend that a downsteam service is down, we need to isolate the message for later processing");
+            return MessageState.Isolate;
+        }
 
-            if (!IsRefundMessage(message))
+        if (IsRefundMessage(message))
+        {
+            logger.LogInformation("This is a refund message");
+            if (HasOrderBeenIssued(message))
             {
-                logger.LogInformation("This is a order message");
-                logger.LogInformation("Process this order now");
+                logger.LogInformation("Order has been issued, process this now");
                 return MessageState.Send;
             }
-
-            if (IsRefundMessage(message))
-            {
-                logger.LogInformation("This is a refund message");
-                logger.LogInformation("I need to process this later");
-                return MessageState.Defer;
-            }
+            logger.LogInformation("I need to process this later");
+            return MessageState.Defer;
         }
-        
-        return MessageState.Unknown;
+            
+        logger.LogInformation("This is a order message, process now");
+        return MessageState.Send;
+    }
+
+    private bool IsDownstreamInError()
+    {
+        return circuitStateContext.State == CircuitState.Open || circuitStateContext.State == CircuitState.HalfOpen;
+    }
+
+    private bool HasOrderBeenIssued(ConcurCompleatMessage message)
+    {
+        return true;
     }
 
     /// <summary>

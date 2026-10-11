@@ -3,7 +3,7 @@ using StateFlowApi.Infrastructure;
 
 namespace StateFlowApi;
 
-public sealed class Worker(ILogger<Worker> logger, SqsClient sqsClient, ICoordinator coordinator) : BackgroundService
+public sealed class Worker(ILogger<Worker> logger, ISqsClient sqsClient, ICoordinator coordinator) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
