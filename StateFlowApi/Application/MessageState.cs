@@ -12,5 +12,6 @@ public enum MessageState
     Retry,
     Start,
     Finish,
+    Done,
     Unknown
 }

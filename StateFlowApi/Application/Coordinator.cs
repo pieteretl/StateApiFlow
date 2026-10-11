@@ -1,7 +1,6 @@
-using StateFlowApi.Application;
 using StateFlowApi.Contracts;
 
-namespace StateFlowApi;
+namespace StateFlowApi.Application;
 
 public class Coordinator
 (
@@ -13,6 +12,7 @@ public class Coordinator
     IRetryMessage retryMessage,
     IRejectMessage rejectMessage,
     IStartMessage startMessage,
+    IFinishMessage finishMessage,
     ILogger<Coordinator> logger
 ) : ICoordinator
 {
@@ -23,7 +23,7 @@ public class Coordinator
 
         try
         {
-            while (messageState is not MessageState.Finish)
+            while (messageState is not MessageState.Done)
             {
                 messageState = await TransitionToNextState(messageState, message, cancellationToken);
 
@@ -55,10 +55,11 @@ public class Coordinator
             MessageState.Defer => await deferMessage.Process(message),
             MessageState.Receive => await receiveMessage.Process(message),
             MessageState.Send => await sendMessage.Process(message),
+            MessageState.Finish => await finishMessage.Process(message),
             MessageState.Isolate => await isolateMessage.Process(message),
             MessageState.Fail => await failMessage.Process(message),
             MessageState.Retry => await retryMessage.Process(message),
-            _ => MessageState.Cancel
+            _ => MessageState.Done
         };
     }
 

@@ -21,12 +21,18 @@ public class DynamoDbClient : IDynamoDbClient
             }
         );
     }
+
+    public async Task Store()
+    {
+        await Task.Delay(1);
+    }
 }
 
 public interface IDynamoDbClient
 {
     Task<DbData> Get();
     Task<DbData> StoreMetadataWithMessageStatus();
+    Task Store();
 }
 
 public class DbData

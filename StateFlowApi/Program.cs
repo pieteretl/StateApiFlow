@@ -32,6 +32,9 @@ builder.Services.AddTransient<IDynamoDbClient, DynamoDbClient>();
 builder.Services.AddTransient<IS3Client, S3Client>();
 builder.Services.AddTransient<ISecretClient, SecretClient>();
 builder.Services.AddTransient<ITokeniseClient, TokeniserClient>();
+builder.Services.AddTransient<ISqsClient, SqsClient>();
+
+builder.Services.AddHostedService<Worker>();
 
 var app = builder.Build();
 
