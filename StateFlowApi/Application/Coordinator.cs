@@ -17,7 +17,7 @@ public class Coordinator
     ILogger<Coordinator> logger
 ) : ICoordinator
 {
-    private readonly uint _maxFailures = 5;
+    private readonly uint _maxFailures = 20;
     private readonly Lock _lock = new();
     private uint _messageCount = 0;
     
@@ -39,10 +39,10 @@ public class Coordinator
                     return false;
                 }
                 
-                // using (_lock.EnterScope())
-                // {
-                //     _messageCount++;
-                // };
+                using (_lock.EnterScope())
+                {
+                    _messageCount++;
+                };
             }
         }
         catch (Exception ex)
