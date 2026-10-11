@@ -5,12 +5,12 @@ public enum MessageState
     Reject,
     Receive,
     Defer,
-    Process,
+    Send,
     Isolate,
     Cancel,
     Fail,
     Retry,
     Start,
-    Success,
+    Finish,
     Unknown
 }

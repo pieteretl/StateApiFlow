@@ -1,3 +1,4 @@
+using StateFlowApi.Application;
 using StateFlowApi.Contracts;
 
 namespace StateFlowApi;
@@ -22,9 +23,9 @@ public class Coordinator
 
         try
         {
-            while (messageState is not MessageState.Success)
+            while (messageState is not MessageState.Finish)
             {
-                messageState = await TransitionAsync(messageState, message, cancellationToken);
+                messageState = await TransitionToNextState(messageState, message, cancellationToken);
 
                 if (messageState is MessageState.Cancel)
                 {
@@ -43,7 +44,7 @@ public class Coordinator
         return true;
     }
 
-    private async Task<MessageState> TransitionAsync(MessageState currentState, ConcurCompleatMessage message, CancellationToken cancellationToken)
+    private async Task<MessageState> TransitionToNextState(MessageState currentState, ConcurCompleatMessage message, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -53,7 +54,7 @@ public class Coordinator
             MessageState.Reject => await rejectMessage.Process(message),
             MessageState.Defer => await deferMessage.Process(message),
             MessageState.Receive => await receiveMessage.Process(message),
-            MessageState.Process => await sendMessage.Process(message),
+            MessageState.Send => await sendMessage.Process(message),
             MessageState.Isolate => await isolateMessage.Process(message),
             MessageState.Fail => await failMessage.Process(message),
             MessageState.Retry => await retryMessage.Process(message),

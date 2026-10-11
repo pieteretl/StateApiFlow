@@ -2,19 +2,24 @@ using StateFlowApi.Contracts;
 
 namespace StateFlowApi;
 
-public interface IStartMessage
+public interface IRetryMessage
 {
     Task<MessageState> Process(ConcurCompleatMessage message);
 }
 
-public class StartMessage(ILogger<StartMessage> logger) : IStartMessage
+public class RetryMessage(ILogger<RetryMessage> logger, ICircuitStateContext circuitStateContext) : IRetryMessage
 {
     public async Task<MessageState> Process(ConcurCompleatMessage message)
     {
+        logger.LogInformation("Starting {MessageId} in {Handler}", ResolveMessageId(message), nameof(RetryMessage));
         await Task.Delay(1);
-        logger.LogInformation("Starting {MessageId}", ResolveMessageId(message));
-        logger.LogInformation("Do some validation here");
-        return MessageState.Receive;
+        
+        if (circuitStateContext.State == CircuitState.Open)
+        {
+            return MessageState.Isolate;
+        }
+        
+        return MessageState.Send;
     }
 
     private static string ResolveMessageId(ConcurCompleatMessage message)

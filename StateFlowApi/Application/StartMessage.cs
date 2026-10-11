@@ -1,21 +1,20 @@
 using StateFlowApi.Contracts;
 
-namespace StateFlowApi;
+namespace StateFlowApi.Application;
 
-public interface IIsolateMessage
+public interface IStartMessage
 {
     Task<MessageState> Process(ConcurCompleatMessage message);
 }
 
-public class IsolateMessage(ILogger<IsolateMessage> logger) : IIsolateMessage
+public class StartMessage(ILogger<StartMessage> logger) : IStartMessage
 {
     public async Task<MessageState> Process(ConcurCompleatMessage message)
     {
-        logger.LogInformation("Entering {Handler} with {MessageId}", nameof(IsolateMessage), ResolveMessageId(message));
         await Task.Delay(1);
-        logger.LogInformation("Let pretend that this has been initiated manually");
-        return MessageState.Process;
-        return MessageState.Cancel;
+        logger.LogInformation("Starting {MessageId}", ResolveMessageId(message));
+        logger.LogInformation("Do some validation here");
+        return MessageState.Receive;
     }
 
     private static string ResolveMessageId(ConcurCompleatMessage message)

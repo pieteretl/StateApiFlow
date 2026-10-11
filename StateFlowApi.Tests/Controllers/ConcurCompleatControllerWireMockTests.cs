@@ -165,7 +165,7 @@ public class ConcurCompleatControllerWireMockTests : IAsyncLifetime
 
             if (s3Response.IsSuccessStatusCode && dynamoDbResponse.IsSuccessStatusCode && secretsResponse.IsSuccessStatusCode)
             {
-                return MessageState.Success;
+                return MessageState.Finish;
             }
 
             return MessageState.Fail;

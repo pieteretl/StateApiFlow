@@ -2,18 +2,20 @@ using StateFlowApi.Contracts;
 
 namespace StateFlowApi;
 
-public interface IDeferMessage
+public interface IIsolateMessage
 {
     Task<MessageState> Process(ConcurCompleatMessage message);
 }
 
-public class DeferMessage(ILogger<DeferMessage> logger) : IDeferMessage
+public class IsolateMessage(ILogger<IsolateMessage> logger) : IIsolateMessage
 {
     public async Task<MessageState> Process(ConcurCompleatMessage message)
     {
+        logger.LogInformation("Entering {Handler} with {MessageId}", nameof(IsolateMessage), ResolveMessageId(message));
         await Task.Delay(1);
-        logger.LogInformation("DifferMessage processed with id: {MessageId}, change the process time to 2min later", ResolveMessageId(message));
-        return MessageState.Process;
+        logger.LogInformation("Let pretend that this has been initiated manually");
+        return MessageState.Send;
+        return MessageState.Cancel;
     }
 
     private static string ResolveMessageId(ConcurCompleatMessage message)

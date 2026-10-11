@@ -1,5 +1,7 @@
 using StateFlowApi;
+using StateFlowApi.Application;
 using StateFlowApi.Controllers;
+using StateFlowApi.Infrastructure;
 using StateFlowApi.Swagger;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -18,13 +20,18 @@ builder.Services.AddTransient<IReceiveMessage, ReceiveMessage>();
 builder.Services.AddTransient<IDeferMessage, DeferMessage>();
 builder.Services.AddTransient<ISendMessage, SendMessage>();
 builder.Services.AddTransient<IIsolateMessage, IsolateMessage>();
-builder.Services.AddTransient<ICancelMessage, CancelMessage>();
+builder.Services.AddTransient<IFinishMessage, FinishMessage>();
 builder.Services.AddTransient<IFailMessage, FailMessage>();
 builder.Services.AddTransient<IRetryMessage, RetryMessage>();
 builder.Services.AddTransient<IRejectMessage, RejectMessage>();
 builder.Services.AddTransient<IStartMessage, StartMessage>();
 
 builder.Services.AddSingleton<ICircuitStateContext, CircuitStateContext>();
+
+builder.Services.AddTransient<IDynamoDbClient, DynamoDbClient>();
+builder.Services.AddTransient<IS3Client, S3Client>();
+builder.Services.AddTransient<ISecretClient, SecretClient>();
+builder.Services.AddTransient<ITokeniseClient, TokeniserClient>();
 
 var app = builder.Build();
 

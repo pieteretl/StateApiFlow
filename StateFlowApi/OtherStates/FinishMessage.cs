@@ -2,16 +2,16 @@ using StateFlowApi.Contracts;
 
 namespace StateFlowApi;
 
-public interface ICancelMessage
+public interface IFinishMessage
 {
     Task<MessageState> Process(ConcurCompleatMessage message);
 }
 
-public class CancelMessage : ICancelMessage
+public class FinishMessage : IFinishMessage
 {
     public async Task<MessageState> Process(ConcurCompleatMessage message)
     {
         await Task.Delay(1);
-        return MessageState.Success;
+        return MessageState.Finish;
     }
 }

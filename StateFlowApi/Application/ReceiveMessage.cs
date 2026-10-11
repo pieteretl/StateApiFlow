@@ -1,4 +1,5 @@
 using StateFlowApi.Contracts;
+using StateFlowApi.Infrastructure;
 
 namespace StateFlowApi;
 
@@ -7,7 +8,7 @@ public interface IReceiveMessage
     Task<MessageState> Process(ConcurCompleatMessage message);
 }
 
-public sealed class ReceiveMessage(ILogger<ReceiveMessage> logger, ICircuitStateContext circuitStateContext) : IReceiveMessage
+public sealed class ReceiveMessage(ILogger<ReceiveMessage> logger, ICircuitStateContext circuitStateContext, IDynamoDbClient dynamoDbClient) : IReceiveMessage
 {
     public async Task<MessageState> Process(ConcurCompleatMessage message)
     {
@@ -20,12 +21,15 @@ public sealed class ReceiveMessage(ILogger<ReceiveMessage> logger, ICircuitState
         if (circuitStateContext.State == CircuitState.Closed)
         {
             logger.LogInformation("Can I process this order now?");
+            
+            logger.LogInformation("Store this in DB, and give it a state of received");
+            await dynamoDbClient.StoreMetadataWithMessageStatus();
 
             if (!IsRefundMessage(message))
             {
                 logger.LogInformation("This is a order message");
                 logger.LogInformation("Process this order now");
-                return MessageState.Process;
+                return MessageState.Send;
             }
 
             if (IsRefundMessage(message))

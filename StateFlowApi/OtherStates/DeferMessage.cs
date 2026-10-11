@@ -2,24 +2,18 @@ using StateFlowApi.Contracts;
 
 namespace StateFlowApi;
 
-public interface IRetryMessage
+public interface IDeferMessage
 {
     Task<MessageState> Process(ConcurCompleatMessage message);
 }
 
-public class RetryMessage(ILogger<RetryMessage> logger, ICircuitStateContext circuitStateContext) : IRetryMessage
+public class DeferMessage(ILogger<DeferMessage> logger) : IDeferMessage
 {
     public async Task<MessageState> Process(ConcurCompleatMessage message)
     {
-        logger.LogInformation("Starting {MessageId} in {Handler}", ResolveMessageId(message), nameof(RetryMessage));
         await Task.Delay(1);
-        
-        if (circuitStateContext.State == CircuitState.Open)
-        {
-            return MessageState.Isolate;
-        }
-        
-        return MessageState.Process;
+        logger.LogInformation("DifferMessage processed with id: {MessageId}, change the process time to 2min later", ResolveMessageId(message));
+        return MessageState.Send;
     }
 
     private static string ResolveMessageId(ConcurCompleatMessage message)
